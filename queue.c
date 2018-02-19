@@ -6,13 +6,13 @@
 /*   By: ihodge <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/11/14 12:37:27 by ihodge            #+#    #+#             */
-/*   Updated: 2017/11/14 13:58:42 by ihodge           ###   ########.fr       */
+/*   Updated: 2017/12/02 20:12:23 by ihodge           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "astar.h"
 
-t_queue *q_init(void)
+t_queue	*q_init(void)
 {
 	t_queue *qu;
 
@@ -35,11 +35,11 @@ int		enqueue_cont(t_lemin **new, t_lemin **list, t_lemin *content)
 		}
 		(*list) = (*list)->next;
 	}
-	if (content->heuristic <= (*list)->heuristic)
+	if (content->heuristic < (*list)->heuristic)
 	{
 		(*new) = astar_init(content);
 		(*new)->next = (*list);
-		(*list) = (*new);
+		(*list)->next = (*new);
 		return (1);
 	}
 	return (0);
@@ -71,13 +71,10 @@ void	enqueue(t_queue *queue, t_lemin *content)
 		queue->last = list->next;
 	}
 	else
-	{
 		queue->first = astar_init(content);
-		queue->last = queue->first;
-	}
 }
 
-void	*dequeue(t_queue *queue)
+t_lemin	*dequeue(t_queue *queue)
 {
 	t_lemin *first;
 

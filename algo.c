@@ -6,17 +6,15 @@
 /*   By: ihodge <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/11/14 11:36:24 by ihodge            #+#    #+#             */
-/*   Updated: 2017/11/17 14:53:13 by aderby           ###   ########.fr       */
+/*   Updated: 2017/12/02 20:49:39 by ihodge           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "astar.h"
 
-//if you find a shorter path to a node through another node, update that node
-
 void	set_distances(t_lemin *prev, t_lemin *node, t_lemin *start)
 {
-	double 	path_dis;
+	double	path_dis;
 	double	start_dis;
 
 	if (prev->prev)
@@ -33,8 +31,8 @@ void	set_distances(t_lemin *prev, t_lemin *node, t_lemin *start)
 void	add_link_to_queue(t_lemin *prev, t_queue *q, t_lemin *start,
 		t_lemin **arr)
 {
-	t_lemin *node;
-	t_link *links;
+	t_lemin	*node;
+	t_link	*links;
 
 	links = prev->links;
 	while (links)
@@ -43,7 +41,7 @@ void	add_link_to_queue(t_lemin *prev, t_queue *q, t_lemin *start,
 		while (node)
 		{
 			if (ft_strequ(node->title, links->title))
-					break ;
+				break ;
 			node = node->next;
 		}
 		if (!ft_strcmp(start->title, prev->title))
@@ -80,7 +78,6 @@ t_lemin	*final_path(t_lemin *stack)
 		}
 		stack = stack->next;
 	}
-	
 	return (head);
 }
 
@@ -94,78 +91,19 @@ t_lemin	*astar_calc(t_queue *q, t_lemin **arr, t_lemin *start, t_lemin *end)
 	end->prev = end;
 	while (ft_strcmp(start->title, q->first->title))
 	{
-		//links = q->first->links;
 		prev = q->first;
 		push(&stack, dequeue(q));
-		//printf("LINKS:\n");
 		if (q->first && ft_strequ(end->title, q->first->title))
-		{
-			ft_putstr("Error: Na valid path\n");
-			exit(1);
-		}
+			err_handle(E7, 1);
 		add_link_to_queue(prev, q, start, arr);
 	}
-	push(&stack, start);
+	push(&stack, astar_init(start));
 	final_head = final_path(stack->top);
+	free_list(stack->top);
+	free(stack);
+	free_list(q->first);
+	free(q);
 	return (final_head);
-}
-
-void	print_format(char *room, char ant)
-{
-	ft_putchar('L');
-	ft_putstr(ft_itoa(ant));
-	ft_putchar('-');
-	ft_putstr(room);
-	ft_putchar(' ');
-}
-
-void	link_start(t_lemin **path, t_lemin **start)
-{
-	t_lemin *tmp;
-	t_lemin *tmp2;
-
-	(*start)->prev = NULL;
-	(*start)->next = (*path);
-	(*path)->prev = (*start);
-	(*path) = (*start);
-	tmp = (*start);
-	while (tmp)
-	{
-		tmp2 = tmp;
-		tmp = tmp->next;
-		if (tmp)
-			tmp->prev = tmp2;
-	}
-}
-
-void	ant_traversal(t_lemin *path, t_lemin *start)
-{
-	int		i;
-	t_lemin	*traverse;
-	t_lemin	*traverse2;
-
-	i = 0;
-	link_start(&path, &start);
-	traverse2 = path;
-	while (traverse2->next)
-		traverse2 = traverse2->next;
-	while (++i <= start->ants)
-	{
-		traverse = traverse2;
-		if (!path->ant)
-			path->ant = i;
-		while (traverse != path)
-		{
-			if (traverse->prev->ant)
-			{
-				traverse->ant = traverse->prev->ant;
-				traverse->prev->ant = 0;
-				print_format(traverse->title, traverse->ant);
-			}
-			traverse = traverse->prev;
-		}
-			ft_putstr("\n");
-	}
 }
 
 int		astar(t_lemin **arr, t_lemin *start, t_lemin *end)
@@ -174,12 +112,11 @@ int		astar(t_lemin **arr, t_lemin *start, t_lemin *end)
 	t_lemin *path;
 
 	if (!end->links || !start->links)
-		return (err_handle(E7, 0));
+		return (err_handle(E7, 1));
 	q = q_init();
 	enqueue(q, end);
 	path = astar_calc(q, arr, start, end);
-//	ft_putstr("going here\n");
-	ant_traversal(path, start);
+	ant_traversal(path, start, 0);
+	free_list(path);
 	return (0);
-	//PATH STRUCT IS THE FINAL PATH AS A LINKED LIST
 }

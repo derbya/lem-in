@@ -18,8 +18,8 @@ France 0 0
 Grèce 0 0
 Hongrie 0 0
 Irlande 0 0
-##end
 Islande 0 0
+##end
 Italie 0 0
 _Lettonie 0 0
 _Liechtenstein 0 0
@@ -129,7 +129,7 @@ Italie-Autriche
 Italie-Slovénie
 Italie-Malte
 _Lettonie-Estonie
-_Lettonie-Lituanie
+_Lettonie-_Lituanie
 _Lettonie-Russie
 _Lettonie-Biélorussie
 _Liechtenstein-Suisse
@@ -162,7 +162,7 @@ Pologne-République_Tchèque
 Pologne-Slovaquie
 Pologne-Ukraine
 Pologne-Biélorussie
-Pologne-Lituanie
+Pologne-_Lituanie
 Pologne-Russie
 Portugal-Espagne
 République_Tchèque-Allemagne

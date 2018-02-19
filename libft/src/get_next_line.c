@@ -3,72 +3,99 @@
 /*                                                        :::      ::::::::   */
 /*   get_next_line.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aderby <marvin@42.fr>                      +#+  +:+       +#+        */
+/*   By: ihodge <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2017/06/24 13:42:56 by aderby            #+#    #+#             */
-/*   Updated: 2017/07/01 13:16:51 by aderby           ###   ########.fr       */
+/*   Created: 2017/07/02 18:51:28 by ihodge            #+#    #+#             */
+/*   Updated: 2017/08/09 20:20:51 by ihodge           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../inc/libft.h"
+#include "libft.h"
 
-static t_list		*ft_list_get(t_list **saved, int fd)
+t_lst		*create_lst(int fd)
 {
-	t_list	*list;
+	t_lst	*new;
 
-	list = *saved;
-	while (list)
-	{
-		if ((int)list->content_size == fd)
-			return (list);
-		list = list->next;
-	}
-	list = ft_lstnew("\0", fd);
-	ft_lstadd(saved, list);
-	list = *saved;
-	return (list);
+	if (!(new = (t_lst*)ft_memalloc(sizeof(t_lst))))
+		return (NULL);
+	new->fd = fd;
+	new->str = NULL;
+	new->next = NULL;
+	return (new);
 }
 
-static int			ft_append(char **line, char *content, int i)
+static int	strlen_del(t_lst *end, char **line, int ret, int fd)
 {
-	while (content[i])
-	{
-		if (content[i] == '\n')
-			break ;
-		i++;
-	}
-	if (!(*line = ft_strnew(i)))
-		return (-1);
-	if (!(*line = ft_strjoin(*line, ft_strsub(content, 0, (i)))))
-		return (-1);
-	return (i);
-}
+	int		len;
+	char	*tmp;
 
-int					get_next_line(const int fd, char **line)
-{
-	char			readto[BUFF_SIZE + 1];
-	static t_list	*saved;
-	t_list			*nline;
-	int				i;
-	int				len;
-
-	if (line == NULL || fd < 0 || read(fd, readto, 0) < 0)
-		return (-1);
-	nline = ft_list_get(&saved, fd);
-	if (!(*line = ft_strnew(0)))
-		return (-1);
-	while ((i = read(fd, readto, BUFF_SIZE)))
-	{
-		readto[i] = '\0';
-		if (!(nline->content = ft_strjoin(nline->content, readto)))
-			return (-1);
-		if (ft_strchr(readto, '\n'))
-			break ;
-	}
-	if (i < 1 && !ft_strlen(nline->content))
+	len = 0;
+	if (ret == 0 && end->str[0] == '\0')
 		return (0);
-	len = ft_append(line, nline->content, 0);
-	(len < (int)ft_strlen(nline->content)) ? nline->content += len + 1
-		: ft_strclr(nline->content);
+	while (end->str[len] != '\n' && end->str[len] != '\0')
+		len++;
+	if (end->str[len] == '\n')
+	{
+		*line = ft_strsub(end->str, 0, len);
+		tmp = ft_strdup(end->str + len + 1);
+		free(end->str);
+		end->str = tmp;
+	}
+	else if (end->str[len] == '\0')
+	{
+		if (ret == BUFF_SIZE)
+			return (get_next_line(fd, line));
+		*line = ft_strdup(end->str);
+		ft_strdel(&end->str);
+	}
 	return (1);
+}
+
+t_lst		*find_or_create_fd(int fd, t_lst **lst)
+{
+	t_lst	*tmp;
+
+	tmp = (*lst);
+	if (tmp)
+	{
+		while (tmp->fd != fd && tmp != NULL)
+		{
+			if (tmp->next == NULL)
+				tmp->next = create_lst(fd);
+			tmp = tmp->next;
+		}
+	}
+	else
+	{
+		(*lst) = create_lst(fd);
+		return ((*lst));
+	}
+	return (tmp);
+}
+
+int			get_next_line(const int fd, char **line)
+{
+	int				ret;
+	static t_lst	*start;
+	t_lst			*end;
+	char			buf[BUFF_SIZE + 1];
+	char			*tmp;
+
+	if (fd < 0 || read(fd, buf, 0) < 0 || line == NULL || BUFF_SIZE < 1)
+		return (-1);
+	end = find_or_create_fd(fd, &start);
+	while ((ret = read(fd, buf, BUFF_SIZE)))
+	{
+		buf[ret] = '\0';
+		if (end->str == NULL)
+			end->str = ft_strnew(1);
+		tmp = ft_strjoin(end->str, buf);
+		free(end->str);
+		end->str = tmp;
+		if (ft_strchr(end->str, '\n') != NULL)
+			break ;
+	}
+	if (ret == 0 && end->str == NULL)
+		return (0);
+	return (strlen_del(end, line, ret, fd));
 }

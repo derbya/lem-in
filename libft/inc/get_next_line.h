@@ -6,7 +6,7 @@
 /*   By: aderby <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/26 19:08:30 by aderby            #+#    #+#             */
-/*   Updated: 2017/07/01 13:13:27 by aderby           ###   ########.fr       */
+/*   Updated: 2017/12/03 15:28:12 by aderby           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,13 @@
 
 # define BUFF_SIZE 85
 
-int		get_next_line(const int fd, char **line);
+typedef struct		s_lst
+{
+	struct s_lst	*next;
+	int				fd;
+	char			*str;
+}					t_lst;
+
+int					get_next_line(const int fd, char **line);
 
 #endif
